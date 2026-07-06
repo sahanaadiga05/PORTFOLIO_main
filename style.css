@@ -436,7 +436,6 @@ main {
   overflow: hidden;
   box-shadow: 0 20px 50px rgba(28, 46, 92, 0.15);
   background-color: var(--color-accent);
-  border: 6px solid #ffffff;
   transform-style: preserve-3d;
   transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -635,6 +634,49 @@ main {
 
 .experience-item {
   padding: 40px;
+  background-color: var(--color-primary) !important;
+  color: #ffffff !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.1) !important;
+  transition: var(--transition-smooth);
+}
+
+.experience-item:hover {
+  background-color: #243b7a !important; /* Lighter premium blue on hover */
+  border-color: rgba(255, 255, 255, 0.25) !important;
+}
+
+.experience-item .exp-header {
+  border-bottom: 1.5px solid rgba(255, 255, 255, 0.15) !important;
+}
+
+.experience-item .exp-role-company h3 {
+  color: #ffffff !important;
+}
+
+.experience-item .exp-role-company .company-name {
+  color: var(--color-accent) !important; /* Premium rosy accent */
+}
+
+.experience-item .exp-date {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+.experience-item .exp-tagline {
+  color: #ffffff !important;
+}
+
+.experience-item .exp-bullets li {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.experience-item .exp-bullets li strong {
+  color: #ffffff !important;
+}
+
+.experience-item .exp-bullets li::before {
+  color: var(--color-accent) !important;
 }
 
 .exp-header {
@@ -690,6 +732,47 @@ main {
   display: flex;
   flex-direction: column;
   gap: 30px;
+  background-color: var(--color-primary) !important;
+  color: #ffffff !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.1) !important;
+  transition: var(--transition-smooth);
+}
+
+.education-card:hover {
+  background-color: #243b7a !important; /* Lighter premium blue on hover */
+  border-color: rgba(255, 255, 255, 0.25) !important;
+}
+
+.education-card .edu-header {
+  border-bottom: 1.5px solid rgba(255, 255, 255, 0.15) !important;
+}
+
+.education-card .edu-header-text h3 {
+  color: #ffffff !important;
+}
+
+.education-card .edu-header-text .edu-degree {
+  color: #ffffff !important;
+}
+
+.education-card .edu-header-text .edu-inst {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.education-card .edu-header-text .edu-gpa {
+  color: #ffffff !important;
+}
+
+.education-card .edu-header-text .edu-gpa strong {
+  color: #ffffff !important;
+}
+
+.education-card .certifications-block h4 {
+  color: var(--color-accent) !important; /* Accent rosy pink */
+}
+
+.education-card .cert-list li {
+  color: rgba(255, 255, 255, 0.8) !important;
 }
 
 .edu-header {
@@ -1135,14 +1218,14 @@ main {
 }
 
 .skill-pill {
-  background: #ffffff;
+  background: var(--color-primary);
   display: inline-flex;
   align-items: center;
   gap: 12px;
   padding: 10px 22px 10px 16px;
   border-radius: 40px;
   box-shadow: 0 8px 24px rgba(28, 46, 92, 0.04);
-  border: 1px solid rgba(28, 46, 92, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   transition: var(--transition-bounce);
   cursor: pointer;
 }
@@ -1151,7 +1234,7 @@ main {
   font-family: var(--font-sans);
   font-size: 1.05rem;
   font-weight: 700;
-  color: #6E1A33; /* Burgundy maroon text */
+  color: #ffffff; /* White text for readability */
 }
 
 .skill-pill svg,
@@ -1165,8 +1248,9 @@ main {
 
 .skill-pill:hover {
   transform: translateY(-4px) scale(1.05);
-  box-shadow: 0 12px 30px rgba(28, 46, 92, 0.1);
-  border-color: rgba(66, 85, 255, 0.2);
+  box-shadow: 0 12px 30px rgba(28, 46, 92, 0.15);
+  background: #243b7a;
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .skill-pill:hover svg,

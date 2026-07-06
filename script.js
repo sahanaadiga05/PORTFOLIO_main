@@ -471,7 +471,7 @@ const initPaperRockets = () => {
   const rockets = [];
   const count = 5; /* 5 rockets flying around */
   const colors = ["#760031", "#1C2E5C", "#760031", "#1C2E5C", "#760031"];
-  const sizes = [26, 14, 20, 22, 16]; /* Diverse sizes for 3D depth of field */
+  const sizes = [48, 26, 38, 42, 30]; /* Diverse sizes for 3D depth of field - scaled up for better visibility */
 
   for (let i = 0; i < count; i++) {
     const div = document.createElement("div");
@@ -491,7 +491,7 @@ const initPaperRockets = () => {
       vy: 0,
       targetX: Math.random() * window.innerWidth,
       targetY: Math.random() * window.innerHeight,
-      speed: 1.8 + ((28 - sizes[i]) / 12) * 1.0, // Smaller rockets fly slightly faster
+      speed: 1.8 + ((50 - sizes[i]) / 22) * 1.2, // Adjust speed scaling for larger sizes to keep movement elegant
       angle: Math.random() * 2 * Math.PI,
       turnSpeed: 0.025 + Math.random() * 0.025, // Gentle turn responsiveness
       sway: Math.random() * 100,
