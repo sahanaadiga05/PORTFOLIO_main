@@ -618,6 +618,42 @@ const initTwinklingStars = () => {
 };
 
 // ==========================================================================
+// VIDEO MOCKUP HOVER PAN INTERACTION
+// ==========================================================================
+const initVideoMockupHoverPan = () => {
+  const containers = document.querySelectorAll('.video-container-premium');
+  
+  containers.forEach(container => {
+    const video = container.querySelector('.project-video-mockup');
+    if (!video) return;
+    
+    // Set default transform states
+    video.style.transform = 'scale(1) translate(0%, 0%)';
+    video.style.transformOrigin = 'center center';
+    
+    container.addEventListener('mousemove', (e) => {
+      const rect = container.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width; // 0 to 1
+      const y = (e.clientY - rect.top) / rect.height; // 0 to 1
+      
+      // With scale(1.7), the overflow is 70% of the container size.
+      // We offset the video position smoothly relative to the mouse.
+      const panX = (0.5 - x) * 70; 
+      const panY = (0.5 - y) * 70; 
+      
+      video.style.transform = `scale(1.7) translate(${panX}%, ${panY}%)`;
+      video.style.transition = 'transform 0.15s ease-out'; // Smooth fast tracking transition
+    });
+    
+    container.addEventListener('mouseleave', () => {
+      // Transition smoothly back to default unzoomed state
+      video.style.transition = 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)';
+      video.style.transform = 'scale(1) translate(0%, 0%)';
+    });
+  });
+};
+
+// ==========================================================================
 // INITIALIZE ALL
 // ==========================================================================
 window.addEventListener('DOMContentLoaded', () => {
@@ -631,6 +667,7 @@ window.addEventListener('DOMContentLoaded', () => {
   initActiveLinkIndicator();
   initPaperRockets();
   initTwinklingStars();
+  initVideoMockupHoverPan();
 });
 
 // Refresh GSAP markers after images load to fix visibility triggers
