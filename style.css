@@ -1307,7 +1307,7 @@ main {
     margin: 0 auto !important;
   }
   .projects-stack {
-    height: 72vh !important;
+    height: 80vh !important;
     display: block !important;
     width: 90% !important;
     margin: 0 auto !important;
@@ -1326,13 +1326,13 @@ main {
     border-radius: 24px !important;
   }
   .project-preview {
-    padding: 12px !important;
+    padding: 10px !important;
     order: 1 !important;
-    height: 200px !important;
+    height: 150px !important;
     flex-shrink: 0 !important;
   }
   .project-info {
-    padding: 20px 18px !important;
+    padding: 16px 16px !important;
     order: 2 !important;
     flex: 1 !important;
     display: flex !important;
@@ -1340,25 +1340,28 @@ main {
     justify-content: space-between !important;
     overflow-y: auto !important;
   }
+  .project-category {
+    margin-bottom: 0.5rem !important;
+  }
   .project-title-large {
-    font-size: 1.45rem !important;
+    font-size: 1.35rem !important;
     margin-bottom: 6px !important;
   }
   .project-description-text {
-    font-size: 0.88rem !important;
-    margin-bottom: 10px !important;
-    line-height: 1.4 !important;
+    font-size: 0.85rem !important;
+    margin-bottom: 8px !important;
+    line-height: 1.35 !important;
   }
   .project-tech-group {
-    margin-bottom: 10px !important;
-    gap: 6px !important;
+    margin-bottom: 8px !important;
+    gap: 4px !important;
   }
   .tech-pill {
-    padding: 3px 8px !important;
-    font-size: 0.7rem !important;
+    padding: 3px 6px !important;
+    font-size: 0.68rem !important;
   }
   .view-work-btn {
-    padding: 8px 16px !important;
+    padding: 8px 14px !important;
     font-size: 0.8rem !important;
     align-self: flex-start !important;
   }
