@@ -250,6 +250,7 @@ main {
   display: inline-block;
   white-space: nowrap;
   max-width: 250px;
+  flex-shrink: 0; /* Prevent links from shrinking and overlapping */
 }
 
 .nav-link:hover {
@@ -965,6 +966,11 @@ main {
 }
 
 @media (max-width: 768px) {
+  .experience-timeline {
+    grid-template-columns: 1fr;
+    width: 90% !important;
+    margin: 0 auto !important;
+  }
   .exp-header {
     flex-direction: column;
     align-items: flex-start !important;
