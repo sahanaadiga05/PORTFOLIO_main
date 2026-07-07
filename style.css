@@ -970,8 +970,8 @@ main {
 @media (max-width: 768px) {
   .experience-timeline {
     grid-template-columns: 1fr;
-    width: 95vw !important;
-    max-width: 95vw !important;
+    width: 90vw !important;
+    max-width: 90vw !important;
     margin: 0 auto !important;
     display: flex;
     flex-direction: column;
