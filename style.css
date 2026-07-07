@@ -1071,6 +1071,11 @@ main {
   transform: translateX(100vw);
 }
 
+.projects-stack .card-3 {
+  z-index: 3;
+  transform: translateX(100vw);
+}
+
 /* Project Cards split layout matching user design (exactly 80% of the screen) */
 .project-card {
   width: 80vw;
@@ -1292,19 +1297,29 @@ main {
     height: auto !important;
     overflow: visible !important;
     padding-top: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+  .project-header-container {
+    width: 90% !important;
+    margin: 0 auto !important;
   }
   .projects-stack {
     height: auto !important;
     display: flex;
     flex-direction: column;
     gap: 40px;
-    width: 95vw;
+    width: 90% !important;
+    margin: 0 auto !important;
   }
   .projects-stack .project-card {
     position: relative !important;
     transform: none !important;
     width: 100% !important;
     height: auto !important;
+    margin: 0 auto !important;
   }
 }
 
