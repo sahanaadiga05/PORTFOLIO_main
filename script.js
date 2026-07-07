@@ -469,9 +469,9 @@ const initActiveLinkIndicator = () => {
 // ==========================================================================
 const initPaperRockets = () => {
   const rockets = [];
-  const count = 5; /* 5 rockets flying around */
-  const colors = ["#760031", "#1C2E5C", "#760031", "#1C2E5C", "#760031"];
-  const sizes = [48, 26, 38, 42, 30]; /* Diverse sizes for 3D depth of field - scaled up for better visibility */
+  const count = 3; /* Reduced to 3 rockets */
+  const colors = ["#760031", "#1C2E5C", "#760031"];
+  const sizes = [26, 16, 22]; /* Decreased sizes to make them more subtle */
 
   for (let i = 0; i < count; i++) {
     const div = document.createElement("div");
