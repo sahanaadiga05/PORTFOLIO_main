@@ -1294,8 +1294,8 @@ main {
     margin-bottom: 20px;
   }
   .projects-sticky-container {
-    height: auto !important;
-    overflow: visible !important;
+    height: 100vh !important;
+    overflow: hidden !important;
     padding-top: 60px;
     display: flex;
     flex-direction: column;
@@ -1307,19 +1307,60 @@ main {
     margin: 0 auto !important;
   }
   .projects-stack {
-    height: auto !important;
-    display: flex;
-    flex-direction: column;
-    gap: 40px;
+    height: 72vh !important;
+    display: block !important;
     width: 90% !important;
     margin: 0 auto !important;
+    position: relative !important;
   }
   .projects-stack .project-card {
-    position: relative !important;
-    transform: none !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
     width: 100% !important;
-    height: auto !important;
+    height: 100% !important;
     margin: 0 auto !important;
+  }
+  .project-card {
+    flex-direction: column !important;
+    border-radius: 24px !important;
+  }
+  .project-preview {
+    padding: 12px !important;
+    order: 1 !important;
+    height: 200px !important;
+    flex-shrink: 0 !important;
+  }
+  .project-info {
+    padding: 20px 18px !important;
+    order: 2 !important;
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    overflow-y: auto !important;
+  }
+  .project-title-large {
+    font-size: 1.45rem !important;
+    margin-bottom: 6px !important;
+  }
+  .project-description-text {
+    font-size: 0.88rem !important;
+    margin-bottom: 10px !important;
+    line-height: 1.4 !important;
+  }
+  .project-tech-group {
+    margin-bottom: 10px !important;
+    gap: 6px !important;
+  }
+  .tech-pill {
+    padding: 3px 8px !important;
+    font-size: 0.7rem !important;
+  }
+  .view-work-btn {
+    padding: 8px 16px !important;
+    font-size: 0.8rem !important;
+    align-self: flex-start !important;
   }
 }
 
