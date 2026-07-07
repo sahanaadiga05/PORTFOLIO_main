@@ -298,50 +298,61 @@ const initProjectsScrollAnimations = () => {
   const cards = document.querySelectorAll(".projects-stack .project-card");
   
   if (section && cards.length > 0) {
-    // Desktop & Mobile: Premium Stacking Deck Scroll Pinning
-    const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: ".projects-section",
-        pin: true,
-        start: "top top",
-        end: "+=200%", // 200% of viewport height scroll space
-        scrub: 1,
-        invalidateOnRefresh: true
-      }
+    let mm = gsap.matchMedia();
+    
+    mm.add("(min-width: 769px)", () => {
+      // Desktop: Premium Stacking Deck Scroll Pinning
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: ".projects-section",
+          pin: true,
+          start: "top top",
+          end: "+=200%", // 200% of viewport height scroll space
+          scrub: 1,
+          invalidateOnRefresh: true
+        }
+      });
+
+      // Set initial positions cleanly
+      gsap.set(".projects-stack .card-1", { x: "0%", scale: 1, opacity: 1 });
+      gsap.set(".projects-stack .card-2", { x: "100vw", scale: 1, opacity: 1 });
+      gsap.set(".projects-stack .card-3", { x: "100vw", scale: 1, opacity: 1 });
+
+      // Card 2 slides in from right, Card 1 scales down and blurs slightly
+      tl.to(".projects-stack .card-1", {
+        scale: 0.95,
+        opacity: 0.85,
+        duration: 1,
+        ease: "power2.inOut"
+      }, 0);
+
+      tl.to(".projects-stack .card-2", {
+        x: "0%",
+        duration: 1,
+        ease: "power2.inOut"
+      }, 0);
+
+      // Card 3 slides in from right, Card 2 scales down and blurs slightly
+      tl.to(".projects-stack .card-2", {
+        scale: 0.95,
+        opacity: 0.85,
+        duration: 1,
+        ease: "power2.inOut"
+      }, 1);
+
+      tl.to(".projects-stack .card-3", {
+        x: "0%",
+        duration: 1,
+        ease: "power2.inOut"
+      }, 1);
     });
 
-    // Set initial positions cleanly
-    gsap.set(".projects-stack .card-1", { x: "0%", scale: 1, opacity: 1 });
-    gsap.set(".projects-stack .card-2", { x: "100vw", scale: 1, opacity: 1 });
-    gsap.set(".projects-stack .card-3", { x: "100vw", scale: 1, opacity: 1 });
-
-    // Card 2 slides in from right, Card 1 scales down and blurs slightly
-    tl.to(".projects-stack .card-1", {
-      scale: 0.95,
-      opacity: 0.85,
-      duration: 1,
-      ease: "power2.inOut"
-    }, 0);
-
-    tl.to(".projects-stack .card-2", {
-      x: "0%",
-      duration: 1,
-      ease: "power2.inOut"
-    }, 0);
-
-    // Card 3 slides in from right, Card 2 scales down and blurs slightly
-    tl.to(".projects-stack .card-2", {
-      scale: 0.95,
-      opacity: 0.85,
-      duration: 1,
-      ease: "power2.inOut"
-    }, 1);
-
-    tl.to(".projects-stack .card-3", {
-      x: "0%",
-      duration: 1,
-      ease: "power2.inOut"
-    }, 1);
+    mm.add("(max-width: 768px)", () => {
+      // Mobile: Clear absolute position rules to layout stacked vertically
+      gsap.set(".projects-stack .card-1, .projects-stack .card-2, .projects-stack .card-3", {
+        clearProps: "all"
+      });
+    });
   }
 };
 
