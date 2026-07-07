@@ -307,7 +307,7 @@ const initProjectsScrollAnimations = () => {
           trigger: ".projects-section",
           pin: true,
           start: "top top",
-          end: "+=200%", // 200% of viewport height scroll space
+          end: "+=100%", // 100% of viewport height scroll space
           scrub: 1,
           invalidateOnRefresh: true
         }
@@ -316,7 +316,6 @@ const initProjectsScrollAnimations = () => {
       // Set initial positions cleanly
       gsap.set(".projects-stack .card-1", { x: "0%", scale: 1, opacity: 1 });
       gsap.set(".projects-stack .card-2", { x: "100vw", scale: 1, opacity: 1 });
-      gsap.set(".projects-stack .card-3", { x: "100vw", scale: 1, opacity: 1 });
 
       // Card 2 slides in from right, Card 1 scales down and blurs slightly
       tl.to(".projects-stack .card-1", {
@@ -331,25 +330,11 @@ const initProjectsScrollAnimations = () => {
         duration: 1,
         ease: "power2.inOut"
       }, 0);
-
-      // Card 3 slides in from right, Card 2 scales down and blurs slightly
-      tl.to(".projects-stack .card-2", {
-        scale: 0.95,
-        opacity: 0.85,
-        duration: 1,
-        ease: "power2.inOut"
-      }, 1);
-
-      tl.to(".projects-stack .card-3", {
-        x: "0%",
-        duration: 1,
-        ease: "power2.inOut"
-      }, 1);
     });
 
     mm.add("(max-width: 768px)", () => {
       // Mobile: Clear absolute position rules to layout stacked vertically
-      gsap.set(".projects-stack .card-1, .projects-stack .card-2, .projects-stack .card-3", {
+      gsap.set(".projects-stack .card-1, .projects-stack .card-2", {
         clearProps: "all"
       });
     });

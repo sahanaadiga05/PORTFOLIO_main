@@ -1071,11 +1071,6 @@ main {
   transform: translateX(100vw);
 }
 
-.projects-stack .card-3 {
-  z-index: 3;
-  transform: translateX(100vw);
-}
-
 /* Project Cards split layout matching user design (exactly 80% of the screen) */
 .project-card {
   width: 80vw;
