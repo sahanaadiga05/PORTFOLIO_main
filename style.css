@@ -207,6 +207,8 @@ main {
   min-width: auto; /* Shrinks container down to fit the single active item */
   gap: 10px; /* Tight gap bringing the name close to SAHANA */
   padding: 8px 18px; /* Tighter padding for a smaller pill shape */
+  width: auto !important;
+  max-width: none !important;
 }
 
 .logo-group {
@@ -968,8 +970,12 @@ main {
 @media (max-width: 768px) {
   .experience-timeline {
     grid-template-columns: 1fr;
-    width: 90% !important;
+    width: 95vw !important;
+    max-width: 95vw !important;
     margin: 0 auto !important;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
   }
   .exp-header {
     flex-direction: column;
@@ -999,7 +1005,9 @@ main {
     padding: 4px 10px !important;
   }
   .experience-item {
-    padding: 24px 20px !important;
+    width: 100% !important;
+    padding: 32px 24px !important;
+    border-radius: 36px !important;
   }
 }
 
