@@ -1,0 +1,134 @@
+DermIntel: Personalized Ingredient Analyzer
+DermIntel is an intelligent web application designed to demystify cosmetic ingredient labels and provide personalized, skin-type-aware suitability analyses and product recommendations. By translating complex scientific names into plain language and mapping them directly to a user's unique skin profile, DermIntel helps consumers make safe, healthy, and cost-effective beauty decisions.
+
+The Founder's Pitch & Product Vision
+Every day, millions of people stand in front of store shelves or scroll through e-commerce apps looking at product labels containing words like Niacinamide, Phenoxyethanol, or Methylparaben. They have no idea what these chemicals do, whether they are safe, or if they will cause an breakout or allergic reaction. They are buying blind, guided only by influencer hype and slick marketing.
+
+DermIntel is here to change that. We are building the "Waze of skincare."
+
+Here is the exact user flow from the moment they discover DermIntel to when they receive a personalized verdict:
+
+Mermaid diagram
+The Product Flow Step-by-Step:
+Onboarding & Personalization: The user signs up and answers a quick, visual 5-question wizard to build their profile (Skin type: Oily/Dry/Sensitive/Combination; Hair type; Concerns: Acne, Aging, Redness; Allergies). This becomes their digital skin passport.
+The Dashboard: Clean, premium, and distraction-free. The sidebar displays their recent searches and favorited products. The center provides three simple input channels: Search Bar, URL paste box, or raw Ingredient list paste area.
+The Intelligence Engine:
+The user inputs "Cetaphil Moisturizing Cream". We clean the query using fuzzy matching.
+We extract its ingredient list (either from our local PostgreSQL database, an external skincare API, or directly from the user's manual input).
+The engine cross-references each ingredient against our Ingredient Intelligence Database (containing comedogenic ratings, irritants, benefits, and scientific confidence levels).
+The Suitability Calculation: We calculate a weighted safety and suitability score. An oily-skinned user gets warned about heavy comedogenic oils (e.g., coconut oil); a sensitive-skinned user sees a warning for synthetic fragrances.
+The Verdict & Alternatives: We don't just show numbers; we explain why in plain English. Finally, if the product isn't suitable, we recommend 3 alternative products in the same category that are perfectly aligned with their skin profile and have higher safety scores.
+User Review Required
+IMPORTANT
+
+Key Decisions & Requirements for Review:
+
+Authentication Strategy: For the Core MVP, we propose using a JWT-based custom authentication flow with PostgreSQL to keep setup fast and local. For production, we can migrate to Clerk or NextAuth. Let's confirm if local JWT is preferred for the initial build.
+Data Seeding: Since we are starting from scratch, we need a base dataset of common ingredients and cosmetic products. We will build a seed script that imports common ingredients and products from a CSV/JSON file to populate our PostgreSQL database.
+AI Explanations: We will integrate Gemini API (via python SDK or Next.js API) to generate natural-language product summaries and custom ingredient explanations when a user requests more depth.
+Proposed Changes
+We will build the application in Milestone 1 (Core MVP), organizing the code into a clean, decoupled structure:
+
+backend/: FastAPI codebase containing databases, API endpoints, matching engines, and data processing.
+frontend/: Next.js codebase containing pages, components, dashboards, charts, and state management.
+
+Technical Specifications & Schema Design
+1. Database Schema (PostgreSQL via SQLAlchemy)
+Users & Skin Profiles
+User: id (UUID), email (string, unique), hashed_password (string), created_at (timestamp)
+Profile: user_id (FKey), skin_type (Enum: DRY, OILY, SENSITIVE, COMBINATION, NORMAL), hair_type (string), skin_concerns (JSON list), hair_concerns (JSON list), allergies (JSON list)
+Ingredient Intelligence
+Ingredient:
+id (UUID)
+name (string, unique, lowercase, normalized)
+scientific_name (string, optional)
+purpose (string)
+risk_level (Enum: LOW, MEDIUM, HIGH)
+benefits (JSON list)
+side_effects (JSON list)
+suitable_skin_types (JSON list of skin type Enums)
+avoid_skin_types (JSON list of skin type Enums)
+comedogenic_rating (integer, 0-5)
+irritation_score (integer, 0-5)
+simple_explanation (text)
+Product Catalog
+Product:
+id (UUID)
+name (string)
+brand (string)
+category (string)
+ingredients_text (text) - comma separated original list
+ingredients (ManyToMany to Ingredient relation)
+description (text)
+image_url (string, optional)
+Analysis History
+Analysis:
+id (UUID)
+user_id (FKey)
+product_id (FKey, optional)
+analyzed_at (timestamp)
+input_type (Enum: SEARCH, URL, MANUAL)
+safety_score (float)
+suitability_score (float)
+verdict (text)
+pros (JSON list)
+cons (JSON list)
+profile_snapshot (JSON copy of user profile at analysis time)
+2. Scoring & Personalization Engine Logic
+The core value of DermIntel is the mathematical combination of safety and personalization:
+
+Safety Score
+=
+100
+−
+∑
+(
+Risk Penalty
+)
+−
+∑
+(
+Irritation Score
+×
+5
+)
+−
+∑
+(
+Comedogenic Rating
+×
+4
+)
+Safety Score=100−∑(Risk Penalty)−∑(Irritation Score×5)−∑(Comedogenic Rating×4)
+Suitability Score
+=
+100
+−
+(
+Personalization Penalties
+)
++
+(
+Personalization Boosts
+)
+Suitability Score=100−(Personalization Penalties)+(Personalization Boosts)
+Risk Penalty: High-risk ingredients deduct 15 points, medium-risk deduct 5 points.
+Personalization Engine:
+If user profile has skin_type == OILY, ingredients with comedogenic_rating >= 3 trigger a high penalty (comedogenic alert).
+If user profile has skin_type == SENSITIVE, ingredients with irritation_score >= 2 or marked as fragrance/essential oils trigger suitability penalties.
+If user profile has skin_concerns containing ACNE, ingredients with anti-acne properties (Salicylic Acid, Zinc PCA) add positive boosts.
+If user profile has skin_type == DRY, hydrating ingredients (Glycerin, Hyaluronic Acid) add positive boosts.
+Verification Plan
+Automated Tests
+We will set up test suites using:
+
+Backend: pytest to verify fuzzy search, ingredient matching, scoring arithmetic, and API routes.
+Command: pytest backend/tests
+Frontend: jest or Vitest for testing state updates (Zustand) and suitability calculations.
+Manual Verification
+Register a new user profile with "Sensitive and Acne-Prone Skin".
+Paste an ingredient list containing fragrance, alcohol denat, and coconut oil (known irritants/comedogenics).
+Verify that:
+Donut chart matches risk calculation.
+Warnings display highlighting why coconut oil and fragrance are flag points for their skin profile.
+Alternatives recommended are fragrance-free and non-comedogenic moisturizers....this is implementation plan.......can u pls tell me tech stacks name with half line explnations
