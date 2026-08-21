@@ -1,67 +1,116 @@
 // Register GSAP plugins
-gsap.registerPlugin(ScrollTrigger);
+if (window.gsap && window.ScrollTrigger) {
+  gsap.registerPlugin(ScrollTrigger);
+}
+
+let lenisInstance;
+const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+const supportsFinePointer = window.matchMedia('(pointer: fine)').matches;
+const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+const deviceMemory = navigator.deviceMemory || 4;
+const hardwareConcurrency = navigator.hardwareConcurrency || 4;
+const prefersDataSaver = Boolean(connection?.saveData);
+const isCompactViewport = window.innerWidth < 1280;
+const isLowPowerDevice = deviceMemory <= 4 || hardwareConcurrency <= 6;
+const shouldUseLightEffects = prefersReducedMotion.matches || prefersDataSaver || !supportsFinePointer || isCompactViewport || isLowPowerDevice;
 
 // ==========================================================================
 // LENIS SMOOTH SCROLLING
 // ==========================================================================
 const initLenis = () => {
-  const lenis = new Lenis({
-    duration: 1.4,
+  if (typeof Lenis === 'undefined') return;
+
+  lenisInstance = new Lenis({
+    duration: 1.1,
     easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
     orientation: 'vertical',
     gestureOrientation: 'vertical',
     smoothWheel: true,
     wheelMultiplier: 1,
     smoothTouch: false,
-    touchMultiplier: 2,
+    touchMultiplier: 1.5,
     infinite: false,
   });
 
-  // Sync scrollTrigger with Lenis
-  lenis.on('scroll', ScrollTrigger.update);
+  if (window.ScrollTrigger) {
+    lenisInstance.on('scroll', ScrollTrigger.update);
+  }
 
   gsap.ticker.add((time) => {
-    lenis.raf(time * 1000);
+    lenisInstance.raf(time * 1000);
   });
+};
 
-  gsap.ticker.lagSmoothing(0);
+// ==========================================================================
+// SMOOTH ANCHOR LINKS
+// ==========================================================================
+const initSmoothAnchorLinks = () => {
+  const anchorLinks = document.querySelectorAll('a[href^="#"]');
+
+  anchorLinks.forEach((link) => {
+    link.addEventListener('click', (event) => {
+      const targetId = link.getAttribute('href');
+      if (!targetId || targetId === '#') return;
+
+      const target = document.querySelector(targetId);
+      if (!target) return;
+
+      event.preventDefault();
+
+      if (lenisInstance) {
+        lenisInstance.scrollTo(target, {
+          offset: -110,
+          duration: 1.1,
+        });
+      } else {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
 };
 
 // ==========================================================================
 // CUSTOM CURSOR
 // ==========================================================================
 const initCustomCursor = () => {
+  if (shouldUseLightEffects) return;
+
   const cursor = document.getElementById('custom-cursor');
   const follower = document.getElementById('custom-cursor-follower');
+  if (!cursor || !follower) return;
 
   let mouseX = 0;
   let mouseY = 0;
   let followerX = 0;
   let followerY = 0;
 
-  window.addEventListener('mousemove', (e) => {
-    mouseX = e.clientX;
-    mouseY = e.clientY;
-    
-    // Direct position for the dot
-    gsap.set(cursor, { x: mouseX, y: mouseY });
-  });
+  const setCursorX = gsap.quickSetter(cursor, 'x', 'px');
+  const setCursorY = gsap.quickSetter(cursor, 'y', 'px');
+  const setFollowerX = gsap.quickSetter(follower, 'x', 'px');
+  const setFollowerY = gsap.quickSetter(follower, 'y', 'px');
 
-  // Follower animation with delay
+  window.addEventListener('mousemove', (event) => {
+    mouseX = event.clientX;
+    mouseY = event.clientY;
+    setCursorX(mouseX);
+    setCursorY(mouseY);
+  }, { passive: true });
+
   gsap.ticker.add(() => {
-    followerX += (mouseX - followerX) * 0.15;
-    followerY += (mouseY - followerY) * 0.15;
-    gsap.set(follower, { x: followerX, y: followerY });
+    followerX += (mouseX - followerX) * 0.14;
+    followerY += (mouseY - followerY) * 0.14;
+    setFollowerX(followerX);
+    setFollowerY(followerY);
   });
 
-  // Hover states
   const hoverElements = document.querySelectorAll('a, button, .magnetic, .social-icon-btn, .project-card, .skills-card');
-  hoverElements.forEach((el) => {
-    el.addEventListener('mouseenter', () => {
+  hoverElements.forEach((element) => {
+    element.addEventListener('mouseenter', () => {
       cursor.classList.add('hovered');
       follower.classList.add('hovered');
     });
-    el.addEventListener('mouseleave', () => {
+
+    element.addEventListener('mouseleave', () => {
       cursor.classList.remove('hovered');
       follower.classList.remove('hovered');
     });
@@ -72,32 +121,135 @@ const initCustomCursor = () => {
 // MAGNETIC BUTTON EFFECT
 // ==========================================================================
 const initMagneticButtons = () => {
+  if (shouldUseLightEffects) return;
+
   const magneticItems = document.querySelectorAll('.magnetic');
 
   magneticItems.forEach((item) => {
-    item.addEventListener('mousemove', function(e) {
-      const boundBox = this.getBoundingClientRect();
-      const itemX = e.clientX - boundBox.left - boundBox.width / 2;
-      const itemY = e.clientY - boundBox.top - boundBox.height / 2;
+    const quickX = gsap.quickTo(item, 'x', { duration: 0.22, ease: 'power2.out' });
+    const quickY = gsap.quickTo(item, 'y', { duration: 0.22, ease: 'power2.out' });
 
-      // Translate the button slightly towards the cursor
-      gsap.to(this, {
-        x: itemX * 0.4,
-        y: itemY * 0.4,
-        duration: 0.3,
-        ease: "power2.out"
-      });
-    });
+    item.addEventListener('mousemove', function (event) {
+      const box = this.getBoundingClientRect();
+      const itemX = event.clientX - box.left - box.width / 2;
+      const itemY = event.clientY - box.top - box.height / 2;
+      quickX(itemX * 0.22);
+      quickY(itemY * 0.22);
+    }, { passive: true });
 
-    item.addEventListener('mouseleave', function() {
-      // Return button to origin
+    item.addEventListener('mouseleave', function () {
       gsap.to(this, {
         x: 0,
         y: 0,
-        duration: 0.6,
-        ease: "elastic.out(1, 0.3)"
+        duration: 0.45,
+        ease: 'power3.out'
       });
     });
+  });
+};
+
+// ==========================================================================
+// HERO MEADOW GENERATION
+// ==========================================================================
+const initHeroMeadow = () => {
+  const clusters = document.querySelectorAll('.meadow-cluster');
+  if (!clusters.length) return;
+
+  clusters.forEach((cluster) => {
+    if (cluster.dataset.ready === 'true') return;
+    cluster.dataset.ready = 'true';
+
+    const clusterWidth = parseFloat(cluster.style.getPropertyValue('--cluster-width')) || 10;
+    const isGap = cluster.classList.contains('meadow-gap');
+    const isEdge = cluster.classList.contains('meadow-edge');
+    const baseStemCount = isGap
+      ? Math.max(10, Math.round(clusterWidth * 2.1))
+      : isEdge
+        ? Math.max(42, Math.round(clusterWidth * 5))
+        : Math.max(18, Math.round(clusterWidth * 2.9));
+    const stemCount = shouldUseLightEffects
+      ? Math.max(8, Math.round(baseStemCount * 0.55))
+      : baseStemCount;
+
+    const createBloom = (verticalOffset = 0) => {
+      const bloom = document.createElement('span');
+      const bloomClasses = ['meadow-bloom'];
+      const bloomRoll = Math.random();
+
+      if (bloomRoll < 0.16) {
+        bloomClasses.push('meadow-bloom--white');
+      } else if (bloomRoll < 0.28) {
+        bloomClasses.push('meadow-bloom--peach');
+      }
+
+      if (Math.random() < 0.32) bloomClasses.push('meadow-bloom--tiny');
+      bloom.className = bloomClasses.join(' ');
+      bloom.style.setProperty('--bloom-size', `${(3 + Math.random() * 2.8).toFixed(2)}px`);
+      bloom.style.setProperty('--bloom-rotate', `${Math.round(Math.random() * 360)}deg`);
+      bloom.style.setProperty('--float-duration', `${(4 + Math.random() * 3).toFixed(2)}s`);
+      bloom.style.setProperty('--float-delay', `-${(Math.random() * 5).toFixed(2)}s`);
+      bloom.style.setProperty('--bloom-opacity', `${(0.76 + Math.random() * 0.18).toFixed(2)}`);
+      bloom.style.top = `${verticalOffset}px`;
+      bloom.style.left = `${(-6 + Math.random() * 12).toFixed(2)}px`;
+
+      if (!bloom.classList.contains('meadow-bloom--white') && !bloom.classList.contains('meadow-bloom--peach')) {
+        const pinkPalette = [
+          'rgba(212, 96, 116, 0.94)',
+          'rgba(226, 118, 132, 0.9)',
+          'rgba(196, 78, 102, 0.94)',
+          'rgba(232, 136, 142, 0.88)'
+        ];
+        bloom.style.setProperty('--bloom-color', pinkPalette[Math.floor(Math.random() * pinkPalette.length)]);
+      }
+
+      return bloom;
+    };
+
+    for (let index = 0; index < stemCount; index += 1) {
+      const stem = document.createElement('span');
+      stem.className = 'meadow-stem';
+
+      const stemHeight = Math.round(120 + Math.random() * 60);
+      stem.style.setProperty('--stem-x', `${(4 + Math.random() * 92).toFixed(2)}%`);
+      stem.style.setProperty('--stem-height', `${stemHeight}px`);
+      stem.style.setProperty('--stem-lean', `${(-3 + Math.random() * 6).toFixed(2)}deg`);
+      stem.style.setProperty('--stem-curve', `${(-5 + Math.random() * 10).toFixed(2)}deg`);
+      stem.style.setProperty('--stem-duration', `${(4 + Math.random() * 3).toFixed(2)}s`);
+      stem.style.setProperty('--stem-delay', `-${(Math.random() * 6).toFixed(2)}s`);
+      stem.style.setProperty('--leaf-offset', `${Math.round(stemHeight * (0.24 + Math.random() * 0.34))}px`);
+      stem.style.setProperty('--leaf-shift', `${(Math.random() > 0.5 ? 1 : -1) * (2 + Math.random() * 5)}px`);
+      stem.style.setProperty('--leaf-rotate', `${(Math.random() > 0.5 ? 1 : -1) * (14 + Math.random() * 18)}deg`);
+
+      stem.appendChild(createBloom());
+      if (Math.random() < 0.72) {
+        stem.appendChild(createBloom(6 + Math.random() * 10));
+      }
+
+      cluster.appendChild(stem);
+    }
+  });
+};
+
+const initAppButterflies = () => {
+  document.querySelectorAll('.app-butterfly').forEach((butterfly) => butterfly.remove());
+  if (shouldUseLightEffects) return;
+
+  const butterflies = [
+    { left: '8vw', top: '18vh', duration: '22s', color: 'rgba(236, 104, 150, 0.9)', flight: 'app-butterfly-flight-1' },
+    { left: '82vw', top: '26vh', duration: '26s', color: 'rgba(228, 96, 144, 0.88)', flight: 'app-butterfly-flight-2' },
+    { left: '52vw', top: '64vh', duration: '24s', color: 'rgba(242, 128, 168, 0.9)', flight: 'app-butterfly-flight-3' }
+  ];
+
+  butterflies.forEach((butterflyConfig) => {
+    const butterfly = document.createElement('span');
+    butterfly.className = 'app-butterfly';
+    butterfly.style.setProperty('--flight-left', butterflyConfig.left);
+    butterfly.style.setProperty('--flight-top', butterflyConfig.top);
+    butterfly.style.setProperty('--flight-duration', butterflyConfig.duration);
+    butterfly.style.setProperty('--wing-color', butterflyConfig.color);
+    butterfly.style.setProperty('--flight-name', butterflyConfig.flight);
+    butterfly.innerHTML = '<span></span>';
+    document.body.appendChild(butterfly);
   });
 };
 
@@ -107,182 +259,122 @@ const initMagneticButtons = () => {
 const initEntranceAnimations = () => {
   const tl = gsap.timeline({
     onComplete: () => {
-      gsap.set(".main-header, .hero-bio .bio-line, .hero-description, .tagline-badge, .image-frame, .dots-grid, .glow-element, .floating-socials .social-icon-btn", { clearProps: "all" });
+      gsap.set('.main-header, #scrolling-name .first-name, #scrolling-name .last-name, .flower-divider .meadow-cluster', {
+        clearProps: 'opacity,transform'
+      });
     }
   });
 
-  // Reveal main header
-  tl.from(".main-header", {
+  tl.from('.main-header', {
     y: -40,
     opacity: 0,
     duration: 1,
-    ease: "power3.out"
+    ease: 'power3.out'
   });
 
-  // Staggered reveal for bio lines
-  tl.from(".hero-bio .bio-line", {
-    y: 50,
+  tl.from('#scrolling-name .first-name, #scrolling-name .last-name', {
+    y: 60,
     opacity: 0,
-    stagger: 0.15,
-    duration: 1,
-    ease: "power3.out"
-  }, "-=0.6");
+    stagger: 0.14,
+    duration: 1.1,
+    ease: 'power4.out'
+  }, '-=0.8');
 
-  // Fade in hero description
-  tl.from(".hero-description", {
-    y: 20,
+  tl.from('.flower-divider .meadow-cluster', {
+    y: 18,
     opacity: 0,
-    duration: 0.8,
-    ease: "power3.out"
-  }, "-=0.5");
-
-  // Fade in profile badge
-  tl.from(".tagline-badge", {
-    x: -30,
-    opacity: 0,
-    duration: 0.8,
-    ease: "power3.out"
-  }, "-=0.6");
-
-  // Reveal profile image
-  tl.from(".image-frame", {
-    scale: 0.9,
-    opacity: 0,
-    duration: 1.2,
-    ease: "power4.out"
-  }, "-=1.0");
-
-  // Reveal dots grid & glow
-  tl.from(".dots-grid, .glow-element", {
-    opacity: 0,
-    duration: 1.5,
-    ease: "power3.out"
-  }, "-=0.8");
-
-  // Fade in floating social icons
-  tl.from(".floating-socials .social-icon-btn", {
-    x: 40,
-    opacity: 0,
-    stagger: 0.1,
-    duration: 0.8,
-    ease: "power3.out"
-  }, "-=1.2");
+    stagger: 0.06,
+    duration: 0.9,
+    ease: 'power3.out'
+  }, '-=0.7');
 };
 
 // ==========================================================================
 // NAME SCROLL REVEAL & HEADER/SOCIAL TRANSITIONS
 // ==========================================================================
 const initNameReveal = () => {
-  // Animates the name "Sahana Adiga V" upwards to overlap the blurred description and photo as you scroll
-  gsap.fromTo("#scrolling-name", 
-    { y: "0%" },
+  gsap.fromTo('#scrolling-name',
+    { y: '0%' },
     {
-      y: "-45vh", // Pulls the name high up to overlap the middle of the hero section
-      ease: "none",
+      y: '-45vh',
+      ease: 'none',
       scrollTrigger: {
-        trigger: "#about",
-        start: "top top",
-        end: "bottom top",
+        trigger: '#hero',
+        start: 'top top',
+        end: 'bottom top',
         scrub: true,
       }
     }
   );
 
-  // Slowly blur and fade out the description text and profile photo
-  gsap.to(".hero-left, .hero-right", {
-    filter: "blur(12px)",
+  gsap.fromTo('.flower-divider',
+    { y: 0 },
+    {
+      y: -80,
+      ease: 'none',
+      scrollTrigger: {
+        trigger: '#hero',
+        start: 'top top',
+        end: 'bottom top',
+        scrub: true,
+      }
+    }
+  );
+
+  gsap.to('.hero-name-stage', {
+    filter: 'blur(12px)',
     opacity: 0.1,
     scale: 0.92,
     y: -40,
-    ease: "none",
+    ease: 'none',
     scrollTrigger: {
-      trigger: "#about",
-      start: "top top",
-      end: "bottom top",
+      trigger: '#hero',
+      start: 'top top',
+      end: 'bottom top',
       scrub: true,
     }
   });
 
-  // Social icons fade out during name reveal (hero scroll-out), then fade back in at Experience
-  const socialTimeline = gsap.timeline({
-    scrollTrigger: {
-      trigger: "#about",
-      start: "top top",
-      endTrigger: "#experience",
-      end: "top 15%",
-      scrub: true,
-      invalidateOnRefresh: true
-    }
-  });
-
-  // 1. Fade out quickly as we scroll from top
-  socialTimeline.to(".floating-socials", {
-    opacity: 0,
-    scale: 0.8,
-    pointerEvents: "none",
-    duration: 0.3
-  });
-
-  // 2. Keep hidden during name reveal
-  socialTimeline.to(".floating-socials", {
-    opacity: 0,
-    scale: 0.8,
-    pointerEvents: "none",
-    duration: 0.4
-  });
-
-  // 3. Fade back in as we enter Experience section
-  socialTimeline.to(".floating-socials", {
-    opacity: 1,
-    scale: 1,
-    pointerEvents: "auto",
-    duration: 0.3
-  });
-
-  // Navigation capsule shifts to top-right on entering experience and items stagger in
   ScrollTrigger.create({
-    trigger: "#experience",
-    start: "top 80%",
+    trigger: '#about',
+    start: 'top 78%',
     onEnter: () => {
-      const header = document.querySelector(".main-header");
+      const header = document.querySelector('.main-header');
       if (header) {
-        header.classList.add("scrolled");
-        // Animate nav links one by one (staggered reveal)
-        gsap.fromTo(".nav-link", 
+        header.classList.add('scrolled');
+        gsap.fromTo('.nav-link',
           { opacity: 0, y: -10 },
-          { 
-            opacity: 1, 
-            y: 0, 
-            stagger: 0.1, 
-            duration: 0.4, 
-            ease: "power2.out", 
+          {
+            opacity: 1,
+            y: 0,
+            stagger: 0.1,
+            duration: 0.4,
+            ease: 'power2.out',
             delay: 0.2,
-            clearProps: "opacity,transform" // Clear inline properties so CSS styles take over dynamically
+            clearProps: 'opacity,transform'
           }
         );
       }
     },
     onLeaveBack: () => {
-      const header = document.querySelector(".main-header");
+      const header = document.querySelector('.main-header');
       if (header) {
-        header.classList.remove("scrolled");
-        // Reset properties cleanly
-        gsap.set(".nav-link", { clearProps: "all" });
+        header.classList.remove('scrolled');
+        gsap.set('.nav-link', { clearProps: 'all' });
       }
     }
   });
 
-  // Experience section starts heavily blurred during name reveal, then unblurs and sharpens on scroll-in
-  gsap.fromTo("#experience", 
-    { filter: "blur(28px)", opacity: 0 },
+  gsap.fromTo('#experience',
+    { filter: 'blur(28px)', opacity: 0 },
     {
-      filter: "blur(0px)",
+      filter: 'blur(0px)',
       opacity: 1,
-      ease: "power2.out",
+      ease: 'power2.out',
       scrollTrigger: {
-        trigger: "#experience",
-        start: "top 92%",
-        end: "top 50%",
+        trigger: '#experience',
+        start: 'top 92%',
+        end: 'top 50%',
         scrub: true,
         invalidateOnRefresh: true
       }
@@ -294,171 +386,188 @@ const initNameReveal = () => {
 // PROJECTS STACKING DECK SCROLL ANIMATIONS
 // ==========================================================================
 const initProjectsScrollAnimations = () => {
-  const section = document.querySelector(".projects-section");
-  const cards = document.querySelectorAll(".projects-stack .project-card");
-  
-  if (section && cards.length > 0) {
-    let mm = gsap.matchMedia();
-    
-    mm.add("(min-width: 769px)", () => {
-      // Desktop: Premium Stacking Deck Scroll Pinning
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: ".projects-section",
-          pin: true,
-          start: "top top",
-          end: "+=200%", // 200% of viewport height scroll space
-          scrub: 1,
-          invalidateOnRefresh: true
-        }
-      });
+  const section = document.querySelector('.projects-section');
+  const cards = document.querySelectorAll('.projects-stack .project-card');
+  if (!section || !cards.length) return;
 
-      // Set initial positions cleanly
-      gsap.set(".projects-stack .card-1", { x: "0%", scale: 1, opacity: 1 });
-      gsap.set(".projects-stack .card-2", { x: "100vw", scale: 1, opacity: 1 });
-      gsap.set(".projects-stack .card-3", { x: "100vw", scale: 1, opacity: 1 });
+  const mm = gsap.matchMedia();
 
-      // Card 2 slides in from right, Card 1 scales down and blurs slightly
-      tl.to(".projects-stack .card-1", {
-        scale: 0.95,
-        opacity: 0.85,
-        duration: 1,
-        ease: "power2.inOut"
-      }, 0);
-
-      tl.to(".projects-stack .card-2", {
-        x: "0%",
-        duration: 1,
-        ease: "power2.inOut"
-      }, 0);
-
-      // Card 3 slides in from right, Card 2 scales down and blurs slightly
-      tl.to(".projects-stack .card-2", {
-        scale: 0.95,
-        opacity: 0.85,
-        duration: 1,
-        ease: "power2.inOut"
-      }, 1);
-
-      tl.to(".projects-stack .card-3", {
-        x: "0%",
-        duration: 1,
-        ease: "power2.inOut"
-      }, 1);
+  mm.add('(min-width: 769px)', () => {
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: '.projects-section',
+        pin: true,
+        start: 'top top',
+        end: '+=200%',
+        scrub: 1,
+        invalidateOnRefresh: true
+      }
     });
 
-    mm.add("(max-width: 768px)", () => {
-      // Mobile: Clear absolute position rules to layout stacked vertically
-      gsap.set(".projects-stack .card-1, .projects-stack .card-2, .projects-stack .card-3", {
-        clearProps: "all"
-      });
+    gsap.set('.projects-stack .card-1', { x: '0%', scale: 1, opacity: 1 });
+    gsap.set('.projects-stack .card-2', { x: '100vw', scale: 1, opacity: 1 });
+    gsap.set('.projects-stack .card-3', { x: '100vw', scale: 1, opacity: 1 });
+
+    tl.to('.projects-stack .card-1', { scale: 0.95, opacity: 0.85, duration: 1, ease: 'power2.inOut' }, 0);
+    tl.to('.projects-stack .card-2', { x: '0%', duration: 1, ease: 'power2.inOut' }, 0);
+    tl.to('.projects-stack .card-2', { scale: 0.95, opacity: 0.85, duration: 1, ease: 'power2.inOut' }, 1);
+    tl.to('.projects-stack .card-3', { x: '0%', duration: 1, ease: 'power2.inOut' }, 1);
+  });
+
+  mm.add('(max-width: 768px)', () => {
+    gsap.set('.projects-stack .card-1, .projects-stack .card-2, .projects-stack .card-3', {
+      clearProps: 'all'
     });
-  }
+  });
 };
 
 // ==========================================================================
 // CONTENT SCROLL TRIGGERS
 // ==========================================================================
 const initScrollAnimations = () => {
-  // Experience timeline entry
-  gsap.from(".experience-item", {
+  gsap.from('.about-section .section-header', {
     scrollTrigger: {
-      trigger: ".experience-section",
-      start: "top 75%",
-      toggleActions: "play none none none"
+      trigger: '.about-section',
+      start: 'top 72%',
+      toggleActions: 'play none none none'
+    },
+    y: 30,
+    opacity: 0,
+    duration: 0.8,
+    ease: 'power3.out'
+  });
+
+
+  gsap.from('.about-section .image-frame', {
+    scrollTrigger: {
+      trigger: '.about-section',
+      start: 'top 70%',
+      toggleActions: 'play none none none'
+    },
+    scale: 0.92,
+    opacity: 0,
+    duration: 1,
+    ease: 'power4.out'
+  });
+
+  gsap.from('.about-socials .social-icon-btn', {
+    scrollTrigger: {
+      trigger: '.about-section',
+      start: 'top 72%',
+      toggleActions: 'play none none none'
+    },
+    x: -24,
+    opacity: 0,
+    stagger: 0.08,
+    duration: 0.7,
+    ease: 'power3.out'
+  });
+
+  gsap.from('.about-section .dots-grid, .about-section .glow-element', {
+    scrollTrigger: {
+      trigger: '.about-section',
+      start: 'top 70%',
+      toggleActions: 'play none none none'
+    },
+    opacity: 0,
+    duration: 1.2,
+    ease: 'power3.out'
+  });
+
+  gsap.from('.experience-item', {
+    scrollTrigger: {
+      trigger: '.experience-section',
+      start: 'top 75%',
+      toggleActions: 'play none none none'
     },
     y: 50,
     opacity: 0,
     duration: 1,
-    ease: "power3.out"
+    ease: 'power3.out'
   });
 
-  // Experience inner elements reveal
-  gsap.from(".exp-bullets li", {
+  gsap.from('.exp-bullets li', {
     scrollTrigger: {
-      trigger: ".experience-item",
-      start: "top 60%"
+      trigger: '.experience-item',
+      start: 'top 60%'
     },
     x: -20,
     opacity: 0,
     stagger: 0.15,
     duration: 0.8,
-    ease: "power3.out"
+    ease: 'power3.out'
   });
 
-  // Skills tags animation inside cards
-  gsap.fromTo(".skill-pill", 
+  gsap.fromTo('.skill-pill',
     { scale: 0.8, opacity: 0 },
     {
       scale: 1,
       opacity: 1,
       stagger: 0.03,
       duration: 0.6,
-      ease: "back.out(1.5)",
-      clearProps: "all",
+      ease: 'back.out(1.5)',
+      clearProps: 'all',
       scrollTrigger: {
-        trigger: ".skills-section",
-        start: "top 80%"
+        trigger: '.skills-section',
+        start: 'top 80%'
       }
     }
   );
 
-  // Education card anim
-  gsap.fromTo(".education-card", 
+  gsap.fromTo('.education-card',
     { y: 50, opacity: 0 },
     {
       y: 0,
       opacity: 1,
       duration: 0.8,
-      ease: "power3.out",
-      clearProps: "all",
+      ease: 'power3.out',
+      clearProps: 'all',
       scrollTrigger: {
-        trigger: ".education-card",
-        start: "top 80%"
+        trigger: '.education-card',
+        start: 'top 80%'
       }
     }
   );
 
-  // Achievements box scale-in on scroll
-  gsap.fromTo(".achievements-box", 
+  gsap.fromTo('.achievements-box',
     { scale: 0.95, opacity: 0 },
     {
       scale: 1,
       opacity: 1,
       duration: 1.2,
-      ease: "power3.out",
-      clearProps: "all",
+      ease: 'power3.out',
+      clearProps: 'all',
       scrollTrigger: {
-        trigger: ".achievements-section",
-        start: "top 85%"
+        trigger: '.achievements-section',
+        start: 'top 85%'
       }
     }
   );
 };
 
 // ==========================================================================
-// ACTIVE NAV LINK INDICATOR (BREADCRUMB EFFECT)
+// ACTIVE NAV LINK INDICATOR
 // ==========================================================================
 const initActiveLinkIndicator = () => {
-  const sections = document.querySelectorAll("section[id]");
-  const navLinks = document.querySelectorAll(".nav-link");
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('.nav-link');
 
   sections.forEach((section) => {
     ScrollTrigger.create({
       trigger: section,
-      start: "top 50%", // Triggers when the section crosses the middle of the viewport
-      end: "bottom 50%",
+      start: 'top 50%',
+      end: 'bottom 50%',
       onToggle: (self) => {
-        if (self.isActive) {
-          const id = section.getAttribute("id");
-          navLinks.forEach((link) => {
-            if (link.getAttribute("href") === `#${id}`) {
-              link.classList.add("active");
-            } else {
-              link.classList.remove("active");
-            }
-          });
-        }
+        if (!self.isActive) return;
+
+        const id = section.getAttribute('id');
+        navLinks.forEach((link) => {
+          if (link.getAttribute('href') === `#${id}`) {
+            link.classList.add('active');
+          } else {
+            link.classList.remove('active');
+          }
+        });
       }
     });
   });
@@ -468,115 +577,42 @@ const initActiveLinkIndicator = () => {
 // PAPER ROCKETS GLIDING ANIMATION
 // ==========================================================================
 const initPaperRockets = () => {
-  const rockets = [];
-  const count = 3; /* Reduced to 3 rockets */
-  const colors = ["#760031", "#1C2E5C", "#760031"];
-  const sizes = [26, 16, 22]; /* Decreased sizes to make them more subtle */
-
-  for (let i = 0; i < count; i++) {
-    const div = document.createElement("div");
-    div.className = "paper-rocket-container";
-    div.innerHTML = `
-      <svg viewBox="0 0 24 24" width="${sizes[i]}" height="${sizes[i]}" fill="none" stroke="${colors[i]}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
-      </svg>
-    `;
-    document.body.appendChild(div);
-
-    rockets.push({
-      el: div,
-      x: Math.random() * window.innerWidth,
-      y: Math.random() * window.innerHeight,
-      vx: 0,
-      vy: 0,
-      targetX: Math.random() * window.innerWidth,
-      targetY: Math.random() * window.innerHeight,
-      speed: 1.8 + ((50 - sizes[i]) / 22) * 1.2, // Adjust speed scaling for larger sizes to keep movement elegant
-      angle: Math.random() * 2 * Math.PI,
-      turnSpeed: 0.025 + Math.random() * 0.025, // Gentle turn responsiveness
-      sway: Math.random() * 100,
-      size: sizes[i]
-    });
-  }
-
-  const updateRockets = () => {
-    rockets.forEach((r) => {
-      // 1. Calculate distance to target
-      const dx = r.targetX - r.x;
-      const dy = r.targetY - r.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-
-      // 2. If close to target, select a new random target point
-      if (dist < 80) {
-        r.targetX = Math.random() * (window.innerWidth - 100) + 50;
-        r.targetY = Math.random() * (window.innerHeight - 100) + 50;
-      }
-
-      // 3. Steer towards target angle
-      const targetAngle = Math.atan2(dy, dx);
-      let diff = targetAngle - r.angle;
-
-      // Normalize angle difference to [-PI, PI]
-      while (diff < -Math.PI) diff += 2 * Math.PI;
-      while (diff > Math.PI) diff -= 2 * Math.PI;
-
-      // Gently rotate heading
-      if (Math.abs(diff) > 0.01) {
-        r.angle += Math.sign(diff) * Math.min(r.turnSpeed, Math.abs(diff));
-      }
-
-      // 4. Update velocity and move coordinate
-      r.vx = Math.cos(r.angle) * r.speed;
-      r.vy = Math.sin(r.angle) * r.speed;
-
-      r.x += r.vx;
-      r.y += r.vy;
-
-      // 5. Apply a tiny wind sway simulation
-      r.sway += 0.02;
-      const finalY = r.y + Math.sin(r.sway) * 1.5;
-
-      // 6. Update DOM transform (rotate 45 degrees offset because the SVG faces top-right by default)
-      const degrees = (r.angle * 180) / Math.PI + 45;
-      r.el.style.transform = `translate3d(${r.x}px, ${finalY}px, 0) rotate(${degrees}deg)`;
-    });
-
-    requestAnimationFrame(updateRockets);
-  };
-
-  updateRockets();
+  document.querySelectorAll('.paper-rocket-container').forEach((rocket) => rocket.remove());
 };
 
 // ==========================================================================
 // TWINKLING SPARKLING POINTS (STARRY SKY EFFECT)
 // ==========================================================================
 const initTwinklingStars = () => {
-  const canvas = document.createElement("canvas");
-  canvas.id = "twinkling-stars-canvas";
+  if (shouldUseLightEffects) return;
+
+  const canvas = document.createElement('canvas');
+  canvas.id = 'twinkling-stars-canvas';
   document.body.appendChild(canvas);
 
-  const ctx = canvas.getContext("2d");
+  const ctx = canvas.getContext('2d', { alpha: true });
   let width = (canvas.width = window.innerWidth);
   let height = (canvas.height = window.innerHeight);
-
   const stars = [];
-  const spacing = 38; // Distance between points in pixels
+  const spacing = 60;
+  const targetFrameTime = 1000 / 24;
+  let lastRender = 0;
 
   const generateGrid = () => {
     stars.length = 0;
     const cols = Math.ceil(width / spacing);
     const rows = Math.ceil(height / spacing);
 
-    for (let c = 0; c <= cols; c++) {
-      for (let r = 0; r <= rows; r++) {
+    for (let c = 0; c <= cols; c += 1) {
+      for (let r = 0; r <= rows; r += 1) {
         stars.push({
-          x: c * spacing + (r % 2 === 0 ? 0 : spacing / 2), // Staggered rows for a premium grid design
+          x: c * spacing + (r % 2 === 0 ? 0 : spacing / 2),
           y: r * spacing,
-          size: 1.5, // Small, clean, sharp dots
-          opacity: Math.random() * 0.45 + 0.05, // Initial random opacity
-          twinkleSpeed: Math.random() * 0.007 + 0.003, // Slow, gentle blinking speed
+          size: 1.35,
+          opacity: Math.random() * 0.28 + 0.05,
+          twinkleSpeed: Math.random() * 0.006 + 0.002,
           twinkleDir: Math.random() > 0.5 ? 1 : -1,
-          color: "rgba(28, 46, 92, " // Midnight Blue color points
+          color: 'rgba(28, 46, 92, '
         });
       }
     }
@@ -584,70 +620,122 @@ const initTwinklingStars = () => {
 
   generateGrid();
 
-  window.addEventListener("resize", () => {
+  window.addEventListener('resize', () => {
     width = canvas.width = window.innerWidth;
     height = canvas.height = window.innerHeight;
-    generateGrid(); // Re-generate grid to cover the new viewport dimensions
+    generateGrid();
   });
 
-  const updateStars = () => {
+  const updateStars = (time = 0) => {
+    if (time - lastRender < targetFrameTime) {
+      requestAnimationFrame(updateStars);
+      return;
+    }
+
+    lastRender = time;
     ctx.clearRect(0, 0, width, height);
 
     stars.forEach((star) => {
-      // Toggle between lighter and darker (blinking effect)
       star.opacity += star.twinkleSpeed * star.twinkleDir;
 
-      if (star.opacity >= 0.55) {
-        star.opacity = 0.55;
-        star.twinkleDir = -1; // Start fading to lighter
+      if (star.opacity >= 0.32) {
+        star.opacity = 0.32;
+        star.twinkleDir = -1;
       } else if (star.opacity <= 0.05) {
         star.opacity = 0.05;
-        star.twinkleDir = 1; // Start fading to darker
+        star.twinkleDir = 1;
       }
 
       ctx.beginPath();
       ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
-      ctx.fillStyle = star.color + star.opacity + ")";
+      ctx.fillStyle = star.color + star.opacity + ')';
       ctx.fill();
     });
 
     requestAnimationFrame(updateStars);
   };
 
-  updateStars();
+  requestAnimationFrame(updateStars);
 };
 
+// ==========================================================================
+// PROJECT MEDIA LAZY PLAYBACK
+// ==========================================================================
+const initProjectMedia = () => {
+  const videos = document.querySelectorAll('.project-video-mockup[data-lazy-video]');
+  if (!videos.length) return;
+
+  const canAutoplayWhenVisible = !prefersReducedMotion.matches && !prefersDataSaver;
+
+  const setPlaybackState = async (video, shouldPlay) => {
+    if (!shouldPlay || !canAutoplayWhenVisible) {
+      video.pause();
+      return;
+    }
+
+    if (video.dataset.loaded !== 'true') {
+      video.dataset.loaded = 'true';
+      video.preload = 'metadata';
+      video.load();
+    }
+
+    try {
+      await video.play();
+    } catch (_error) {
+      video.pause();
+    }
+  };
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      const video = entry.target;
+      setPlaybackState(video, entry.isIntersecting);
+    });
+  }, {
+    root: null,
+    rootMargin: '180px 0px',
+    threshold: 0.35
+  });
+
+  videos.forEach((video) => {
+    video.pause();
+    observer.observe(video);
+  });
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState !== 'visible') {
+      videos.forEach((video) => video.pause());
+    }
+  });
+};
 // ==========================================================================
 // VIDEO MOCKUP HOVER PAN INTERACTION
 // ==========================================================================
 const initVideoMockupHoverPan = () => {
+  if (!supportsFinePointer) return;
+
   const containers = document.querySelectorAll('.video-container-premium');
-  
-  containers.forEach(container => {
+
+  containers.forEach((container) => {
     const video = container.querySelector('.project-video-mockup');
     if (!video) return;
-    
-    // Set default transform states
+
     video.style.transform = 'scale(1) translate(0%, 0%)';
     video.style.transformOrigin = 'center center';
-    
-    container.addEventListener('mousemove', (e) => {
+
+    container.addEventListener('mousemove', (event) => {
       const rect = container.getBoundingClientRect();
-      const x = (e.clientX - rect.left) / rect.width; // 0 to 1
-      const y = (e.clientY - rect.top) / rect.height; // 0 to 1
-      
-      // With scale(1.7), the overflow is 70% of the container size.
-      // We offset the video position smoothly relative to the mouse.
-      const panX = (0.5 - x) * 70; 
-      const panY = (0.5 - y) * 70; 
-      
-      video.style.transform = `scale(1.7) translate(${panX}%, ${panY}%)`;
-      video.style.transition = 'transform 0.15s ease-out'; // Smooth fast tracking transition
-    });
-    
+      const x = (event.clientX - rect.left) / rect.width;
+      const y = (event.clientY - rect.top) / rect.height;
+      const panX = (0.5 - x) * 70;
+      const panY = (0.5 - y) * 70;
+
+      video.style.transform = `scale(1.35) translate(${panX * 0.6}%, ${panY * 0.6}%)`;
+      video.style.transition = 'transform 0.15s ease-out';
+    }, { passive: true });
+
     container.addEventListener('mouseleave', () => {
-      // Transition smoothly back to default unzoomed state
-      video.style.transition = 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)';
+      video.style.transition = 'transform 0.45s cubic-bezier(0.16, 1, 0.3, 1)';
       video.style.transform = 'scale(1) translate(0%, 0%)';
     });
   });
@@ -658,19 +746,28 @@ const initVideoMockupHoverPan = () => {
 // ==========================================================================
 window.addEventListener('DOMContentLoaded', () => {
   initLenis();
+  initSmoothAnchorLinks();
   initCustomCursor();
   initMagneticButtons();
+  initHeroMeadow();
+  initAppButterflies();
   initEntranceAnimations();
   initNameReveal();
   initProjectsScrollAnimations();
   initScrollAnimations();
   initActiveLinkIndicator();
-  initPaperRockets();
   initTwinklingStars();
+  initProjectMedia();
   initVideoMockupHoverPan();
 });
 
-// Refresh GSAP markers after images load to fix visibility triggers
 window.addEventListener('load', () => {
   ScrollTrigger.refresh();
 });
+
+
+
+
+
+
+
