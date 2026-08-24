@@ -8,6 +8,7 @@ import heroSidePortrait from './assets/hero-side-portrait.jpg';
 import aboutProfileReplacement from './assets/about-profile-replacement.png';
 import profileImage from './assets/profile.jpg';
 import saskenLogo from './assets/sasken.png';
+import skillsBeachReveal from './assets/skills-beach-reveal.png';
 import smartBookmarkPoster from './assets/smart-bookmark-dashboard.png';
 import taskManagerVideo from './assets/task-manager-cut.mp4';
 
@@ -290,7 +291,7 @@ function createSeededRandom(seed) {
 }
 
 function useActiveSection(sectionIds) {
-  const [activeSection, setActiveSection] = useState('about');
+  const [activeSection, setActiveSection] = useState(null);
 
   useEffect(() => {
     const elements = sectionIds
@@ -307,7 +308,22 @@ function useActiveSection(sectionIds) {
       frameId = 0;
 
       const focusY = window.innerHeight * 0.34;
-      let currentSection = elements[0].id;
+      const skillsImage = document.querySelector('.skills-image-reveal');
+      const skillsImageRect = skillsImage ? skillsImage.getBoundingClientRect() : null;
+      const lastElement = elements[elements.length - 1];
+      const lastRect = lastElement.getBoundingClientRect();
+
+      if (skillsImageRect && skillsImageRect.top <= focusY) {
+        setActiveSection(null);
+        return;
+      }
+
+      if (lastRect.bottom < focusY) {
+        setActiveSection(null);
+        return;
+      }
+
+      let currentSection = null;
 
       for (const element of elements) {
         const rect = element.getBoundingClientRect();
@@ -548,12 +564,12 @@ function App() {
       setHeaderCollapsed(window.scrollY > Math.max(window.innerHeight * 0.4, 220));
 
       const aboutSection = document.getElementById('about');
-      const footerSection = document.querySelector('.footer');
+      const skillsImageSection = document.querySelector('.skills-image-reveal');
       if (!aboutSection) return;
 
       const aboutTop = aboutSection.getBoundingClientRect().top;
-      const footerTop = footerSection ? footerSection.getBoundingClientRect().top : Number.POSITIVE_INFINITY;
-      setSocialsVisible(aboutTop <= window.innerHeight * 0.68 && footerTop > window.innerHeight * 0.9);
+      const skillsImageTop = skillsImageSection ? skillsImageSection.getBoundingClientRect().top : Number.POSITIVE_INFINITY;
+      setSocialsVisible(aboutTop <= window.innerHeight * 0.68 && skillsImageTop > window.innerHeight * 0.82);
     };
 
     onScroll();
@@ -885,13 +901,32 @@ function App() {
                     </m.div>
                   ))}
                 </div>
+
+                <div className="skills-end-line" aria-hidden="true" />
+                <p className="skills-end-tagline">Infinite canvas. Dynamic lighting. Zero dependencies.</p>
+                <m.div
+                  className="skills-image-reveal"
+                  initial={{ y: 24, opacity: 0.8 }}
+                  whileInView={{ y: 0, opacity: 1 }}
+                  viewport={{ once: true, amount: 0.2 }}
+                  transition={{ duration: 1.05, ease: [0.16, 1, 0.3, 1], delay: 0.08 }}
+                >
+                  <img
+                    src={skillsBeachReveal}
+                    alt="Beach landscape"
+                    className="skills-image-reveal__img"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </m.div>
+                <p className="skills-image-credit">(Captured by ME)</p>
               </div>
             </div>
           </section>
         </main>
 
         <footer className="footer">
-          <p>© 2026 Sahana Adiga V. All rights reserved.</p>
+          <p className="footer-copy">© 2026 Sahana Adiga V. All rights reserved.</p>
         </footer>
       </div>
     </LazyMotion>

@@ -8,13 +8,61 @@
     name="description"
     content="Portfolio of Sahana Adiga V, Full-Stack Developer and AI enthusiast specializing in modern, scalable web applications."
   >
+  <link rel="stylesheet" href="style.css">
+  <style>
+    html, body {
+      margin: 0;
+      background: #E8E8D8;
+      color: #1C2E5C;
+      font-family: "Plus Jakarta Sans", "Segoe UI", Arial, sans-serif;
+    }
+
+    #root {
+      min-height: 100vh;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .main-header,
+    header.main-header {
+      position: fixed;
+      top: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 40;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      min-height: 72px;
+      padding: 14px 28px;
+      border-radius: 999px;
+      background: #92003A;
+      box-shadow: 0 16px 30px rgba(44, 20, 25, 0.16);
+    }
+
+    .logo-group,
+    .nav-link {
+      appearance: none;
+      border: 0;
+      background: transparent;
+      color: #f7f0dd;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+  </style>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
     href="https://fonts.googleapis.com/css2?family=Annie+Use+Your+Telescope&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=Syne:wght@400..800&display=swap"
     rel="stylesheet"
   >
-  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div id="root"></div>
